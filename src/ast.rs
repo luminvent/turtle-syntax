@@ -2,23 +2,20 @@
 use std::fmt;
 
 use iref::IriRefBuf;
-use locspan::Meta;
-pub use rdf_types::{BlankId, BlankIdBuf};
+pub use rdf_types::{BlankId, BlankIdBuf, LiteralType};
 pub use xsd_types::lexical::{DecimalBuf, DoubleBuf, IntegerBuf};
-
-pub type RdfLiteral<M> = rdf_types::meta::Literal<M, rdf_types::literal::Type<Iri<M>>>;
 
 /// An IRI or compact IRI.
 #[derive(Clone, Debug)]
 pub enum Iri<M> {
 	IriRef(IriRefBuf),
-	Compact(Meta<String, M>, Meta<String, M>),
+	PrefixedName((String, M), (String, M)),
 }
 
 /// A Turtle document.
 #[derive(Clone, Debug)]
 pub struct Document<M> {
-	pub statements: Vec<Meta<Statement<M>, M>>,
+	pub statements: Vec<(Statement<M>, M)>,
 }
 
 impl<M> Default for Document<M> {
@@ -34,7 +31,7 @@ impl<M> Document<M> {
 		Self::default()
 	}
 
-	pub fn insert(&mut self, statement: Meta<Statement<M>, M>) {
+	pub fn insert(&mut self, statement: (Statement<M>, M)) {
 		self.statements.push(statement)
 	}
 }
@@ -51,26 +48,26 @@ pub enum Statement<M> {
 
 #[derive(Clone, Debug)]
 pub struct Triples<M> {
-	pub subject: Meta<Subject<M>, M>,
-	pub predicate_objects_list: Meta<PredicateObjectsList<M>, M>,
+	pub subject: (Subject<M>, M),
+	pub predicate_objects_list: (PredicateObjectsList<M>, M),
 }
 
-pub type PredicateObjectsList<M> = Vec<Meta<PredicateObjects<M>, M>>;
+pub type PredicateObjectsList<M> = Vec<(PredicateObjects<M>, M)>;
 
 /// A directive.
 #[derive(Clone, Debug)]
 pub enum Directive<M> {
 	/// `@prefix` directive.
-	Prefix(Meta<String, M>, Meta<IriRefBuf, M>),
+	Prefix((String, M), (IriRefBuf, M)),
 
 	/// `@base` directive.
-	Base(Meta<IriRefBuf, M>),
+	Base((IriRefBuf, M)),
 
 	/// SPARQL `PREFIX` directive.
-	SparqlPrefix(Meta<String, M>, Meta<IriRefBuf, M>),
+	SparqlPrefix((String, M), (IriRefBuf, M)),
 
 	/// SPARQL `BASE` directive.
-	SparqlBase(Meta<IriRefBuf, M>),
+	SparqlBase((IriRefBuf, M)),
 }
 
 /// Verb (either `a` or a predicate).
@@ -98,12 +95,12 @@ pub enum Subject<M> {
 
 /// Collection of objects.
 #[derive(Clone, Debug)]
-pub struct Collection<M>(pub Vec<Meta<Object<M>, M>>);
+pub struct Collection<M>(pub Vec<(Object<M>, M)>);
 
 #[derive(Clone, Debug)]
 pub enum BlankNode<M> {
 	Label(BlankIdBuf),
-	Anonymous(Meta<BlankNodePropertyList<M>, M>),
+	Anonymous((BlankNodePropertyList<M>, M)),
 }
 
 pub type BlankNodePropertyList<M> = PredicateObjectsList<M>;
@@ -126,13 +123,13 @@ pub enum Object<M> {
 
 #[derive(Clone, Debug)]
 pub struct PredicateObjects<M> {
-	pub verb: Meta<Verb<M>, M>,
-	pub objects: Meta<Objects<M>, M>,
+	pub verb: (Verb<M>, M),
+	pub objects: (Objects<M>, M),
 }
 
 /// Non empty list of objects.
 #[derive(Clone, Debug)]
-pub struct Objects<M>(pub Vec<Meta<Object<M>, M>>);
+pub struct Objects<M>(pub Vec<(Object<M>, M)>);
 
 /// Literal value.
 #[derive(Clone, Debug)]
@@ -145,6 +142,29 @@ pub enum Literal<M> {
 
 	/// Boolean literal.
 	Boolean(bool),
+}
+
+/// Replacment for [rdf_types::Literal]
+#[derive(Clone, Debug)]
+pub struct RdfLiteral<M, T = Iri<M>> {
+	pub value: (String, M),
+
+	pub type_: (LiteralType<T>, M),
+}
+
+impl<M, T> RdfLiteral<M, T> {
+	pub fn new(value: (String, M), type_: (LiteralType<T>, M)) -> Self {
+		Self { value, type_ }
+	}
+}
+
+impl<M, T> From<RdfLiteral<M, T>> for rdf_types::Literal<T> {
+	fn from(value: RdfLiteral<M, T>) -> Self {
+		rdf_types::Literal {
+			value: value.value.0,
+			type_: value.type_.0,
+		}
+	}
 }
 
 /// Numeric literal value.

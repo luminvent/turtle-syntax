@@ -16,7 +16,6 @@
 //! use codespan_reporting::diagnostic::{Diagnostic, Label};
 //! use codespan_reporting::files::SimpleFiles;
 //! use codespan_reporting::term::termcolor::{ColorChoice, StandardStream};
-//! use locspan::Meta;
 //! use std::fs::File;
 //! use std::io::Read;
 //! use turtle_syntax::{
@@ -41,7 +40,9 @@
 //!       Ok(_doc) => {
 //!         // do something
 //!       }
-//!       Err(Meta(e, span)) => {
+//!       Err(error_and_span) => {
+//!         let e = error_and_span.0;
+//!         let span = error_and_span.1;
 //!         let diagnostic = Diagnostic::error()
 //!           .with_message(format!("parse error: {}", e))
 //!           .with_labels(vec![Label::primary(file_id, span)]);

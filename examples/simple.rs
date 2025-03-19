@@ -1,7 +1,7 @@
 use codespan_reporting::diagnostic::{Diagnostic, Label};
 use codespan_reporting::files::SimpleFiles;
 use codespan_reporting::term::termcolor::{ColorChoice, StandardStream};
-use locspan::Meta;
+use rdf_types::generator::Blank;
 use std::fs::File;
 use std::io::Read;
 use turtle_syntax::{parsing::Parse, Document};
@@ -21,10 +21,19 @@ fn main() -> std::io::Result<()> {
 		let buffer = files.get(file_id).unwrap();
 
 		match Document::parse_str(buffer.source().as_str(), |span| span) {
-			Ok(_doc) => {
-				// do something
+			Ok(doc) => {
+				doc.0
+					.build_lexical_triples(None, Blank::new())
+					.unwrap()
+					.into_iter()
+					.for_each(|triple| {
+						println!("{}", triple);
+					});
 			}
-			Err(Meta(e, span)) => {
+			Err(error_and_span) => {
+				let e = error_and_span.0;
+				let span = error_and_span.1;
+
 				let diagnostic = Diagnostic::error()
 					.with_message(format!("parse error: {}", e))
 					.with_labels(vec![Label::primary(file_id, span)]);

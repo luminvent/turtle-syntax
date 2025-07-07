@@ -1,13 +1,16 @@
 [package]
-name = "turtle-syntax"
+name = "turtle-syntax-next"
 version = "6.0.0"
-authors = ["Timothée Haudebourg <author@haudebourg.net>"]
+authors = [
+  "Timothée Haudebourg <author@haudebourg.net>",
+  "Marc-Antoine Arnaud <marc-antoine.arnaud@luminvent.com>",
+]
 edition = "2021"
 categories = ["parsing"]
 keywords = ["turtle", "rdf", "parser"]
 description = "RDF Turtle parser"
-repository = "https://github.com/timothee-haudebourg/turtle-syntax"
-documentation = "https://docs.rs/turtle-syntax"
+repository = "https://github.com/luminvent/turtle-syntax"
+documentation = "https://docs.rs/turtle-syntax-next"
 license = "MIT/Apache-2.0"
 readme = "README.md"
 

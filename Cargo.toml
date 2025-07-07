@@ -1,6 +1,6 @@
 [package]
 name = "turtle-syntax-next"
-version = "6.0.0"
+version = "7.0.0"
 authors = [
   "Timothée Haudebourg <author@haudebourg.net>",
   "Marc-Antoine Arnaud <marc-antoine.arnaud@luminvent.com>",
